@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fostra Leads</title>
+<style>
+:root{--bg:#f5f6fb;--card:#fff;--text:#17192d;--muted:#757b95;--line:#e7e9f2;--blue:#5156d8;--purple:#9b7bea;--green:#178a63;--red:#c64a57;--shadow:0 10px 30px rgba(24,26,49,.06)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:28px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,#535bdc,#825cf2);display:grid;place-items:center;color:#fff;font-size:22px;box-shadow:0 12px 26px rgba(92,82,220,.25)}
+h1{font-size:27px;margin:0 0 2px;font-weight:760}
+.sub{color:var(--muted);font-size:14px}
+.controls{display:flex;align-items:center;gap:12px}
+.status{background:#fff;border:1px solid var(--line);padding:10px 13px;border-radius:14px;font-size:13px;color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#1fa775;margin-right:7px}
+.select{appearance:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 42px 12px 14px;font:inherit;color:var(--text);min-width:285px;box-shadow:var(--shadow);background-image:linear-gradient(45deg,transparent 50%,#7e8398 50%),linear-gradient(135deg,#7e8398 50%,transparent 50%);background-position:calc(100% - 18px) 18px,calc(100% - 13px) 18px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.kpi{padding:24px}
+.label{font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:750}
+.value{font-size:40px;font-weight:780;margin:16px 0}
+.deltas{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:6px 9px;border-radius:999px;background:#f2f3f8;color:#687087;font-size:12px}
+.good{background:#ebf8f2;color:var(--green)}
+.bad{background:#fff0f1;color:var(--red)}
+.section{margin-top:18px;padding:25px}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}
+.head h2{font-size:18px;margin:0 0 5px}
+.head p{margin:0;color:var(--muted);font-size:13px}
+.legend{display:flex;gap:16px;color:var(--muted);font-size:12px}
+.keydot,.secdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}
+.keydot{background:var(--blue)}.secdot{background:var(--purple)}
+.bars{height:320px;display:grid;grid-template-columns:repeat(4,1fr);align-items:end;gap:30px;padding:10px 20px 0}
+.bar-col{text-align:center}
+.bar-value{font-size:16px;font-weight:750;margin-bottom:8px}
+.bar-stack{width:72px;margin:auto;border-radius:12px 12px 5px 5px;overflow:hidden;background:#eef0f6;display:flex;flex-direction:column;justify-content:flex-end}
+.seg-key{background:var(--blue)}.seg-sec{background:var(--purple)}
+.bar-label{font-size:12px;font-weight:700;margin-top:10px}
+.bar-date{font-size:11px;color:var(--muted);margin-top:4px}
+.trend-wrap{height:260px;position:relative}
+.trend-svg{width:100%;height:100%}
+.grid{stroke:#eceef5;stroke-width:1}
+.axis{fill:#8a8fa3;font-size:10px}
+.line-total{fill:none;stroke:#20243b;stroke-width:2.8}
+.line-key{fill:none;stroke:var(--blue);stroke-width:2}
+.line-sec{fill:none;stroke:var(--purple);stroke-width:2}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.detail{padding:22px;overflow-x:auto}
+.detail h3{font-size:14px;margin:0 0 16px}
+.compare{min-width:500px}
+.compare-head,.compare-row{display:grid;grid-template-columns:minmax(160px,1fr) repeat(3,88px);align-items:center;column-gap:12px}
+.compare-head{padding:0 0 9px;border-bottom:1px solid #e8eaf2;color:var(--muted);font-size:11px}
+.compare-head>span:not(:first-child){text-align:right}
+.compare-head b{display:block;color:var(--text);font-size:12px;font-weight:760}
+.compare-head small{display:block;margin-top:2px;font-size:10px;font-weight:500;color:var(--muted)}
+.compare-row{padding:9px 0;border-bottom:1px solid #f0f1f6;font-size:13px}
+.compare-row:last-child{border-bottom:0}
+.compare-row.sum{background:#f7f8fc;border-radius:12px;margin:6px 0 8px;padding:11px 10px;font-weight:760}
+.compare-row.sum .metric{font-weight:760}
+.compare-row .metric{min-width:0}
+.compare-row .num{text-align:right;color:#72788f;font-weight:650}
+.compare-row .current{color:var(--text);font-weight:800}
+
+.forecast{margin-top:18px;padding:0;overflow:hidden;border-color:#dedcf7}
+.forecast-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:25px 28px 6px}
+.forecast-header h2{font-size:20px;margin:0 0 5px}.forecast-header p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.season-badge{padding:8px 12px;border-radius:999px;background:#f1effb;color:#5d55a8;font-size:12px;font-weight:800;white-space:nowrap}
+.forecast-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px 28px 24px}
+.forecast-mini{border:1px solid #e5e3f3;border-radius:18px;padding:19px;background:linear-gradient(145deg,#fff 0%,#faf9ff 100%)}
+.forecast-mini.primary{background:linear-gradient(145deg,#fbfaff 0%,#f4f1ff 100%);border-color:#dcd7f5}
+.forecast-mini.organic{background:linear-gradient(145deg,#fbfbff 0%,#f5f2ff 100%);border-color:#d8d3f5}
+.forecast-mini.hero{background:linear-gradient(145deg,#4d46a8 0%,#7664d9 100%);border-color:#5d55b8;box-shadow:0 16px 32px rgba(80,70,170,.22);transform:translateY(-2px)}
+.forecast-mini.hero .forecast-mini-label,.forecast-mini.hero .forecast-mini-sub,.forecast-mini.hero .progress-meta{color:rgba(255,255,255,.78)}
+.forecast-mini.hero .forecast-mini-value{color:#fff;font-size:36px}.forecast-mini.hero .progress-track{background:rgba(255,255,255,.18)}.forecast-mini.hero .progress-fill{background:linear-gradient(90deg,#fff,#dcd7ff)}
+.forecast-mini-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.forecast-mini-value{font-size:31px;font-weight:830;color:#302b62;margin:9px 0 4px}
+.forecast-mini-sub{font-size:11px;color:var(--muted);min-height:42px;line-height:1.4}
+.progress-track{height:9px;background:#e9e7f5;border-radius:999px;overflow:hidden;margin-top:13px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#5156d8,#9b7bea);border-radius:999px;transition:width .25s ease}
+.progress-meta{display:flex;justify-content:space-between;gap:10px;margin-top:7px;font-size:11px;color:var(--muted)}
+.funnel-callout{margin:0 28px 24px;padding:17px 19px;border:1px solid #e0def3;background:#f8f7ff;border-radius:17px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.pace-block{margin:0 28px 24px;border:1px solid #e3e4ee;border-radius:18px;background:#fff;overflow:hidden}
+.pace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:17px 19px 12px;border-bottom:1px solid #eef0f5}
+.pace-head h3{font-size:14px;margin:0 0 3px}.pace-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}.pace-week{font-size:11px;font-weight:800;color:#5d55a8;background:#f2effd;border-radius:999px;padding:7px 10px;white-space:nowrap}
+.pace-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.pace-item{padding:18px 19px;border-right:1px solid #eef0f5}.pace-item:last-child{border-right:0}.pace-item.status-good{background:#f5fbf8}.pace-item.status-bad{background:#fff8f8}.pace-item.status-neutral{background:#fafaff}
+.pace-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}.pace-value{font-size:30px;font-weight:850;margin:7px 0 4px;color:#2f3250}.pace-sub{font-size:11px;line-height:1.5;color:#70768d}.pace-sub strong{color:var(--text)}
+.pace-note{padding:10px 19px 12px;border-top:1px solid #eef0f5;color:#8a8fa3;font-size:10px;line-height:1.45;background:#fbfbfd}
+.funnel-callout .big{font-size:27px;font-weight:850;color:#514b9b;white-space:nowrap}.funnel-callout .copy{font-size:12px;line-height:1.55;color:#666c84}.funnel-callout strong{color:var(--text)}
+.forecast-grid{display:grid;grid-template-columns:1fr 1.08fr;border-top:1px solid var(--line)}
+.forecast-table-wrap{padding:24px 28px;border-right:1px solid var(--line)}
+.forecast-table-wrap:last-child{border-right:0}
+.forecast-table-wrap h3{font-size:16px;margin:0 0 4px}.forecast-table-wrap>p{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.4}
+.forecast-scroll{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:15px}
+.forecast-table{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.forecast-table th{position:sticky;top:0;z-index:1;background:#fafaff;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;text-align:right;padding:10px 11px;border-bottom:1px solid var(--line)}
+.forecast-table th:first-child,.forecast-table td:first-child{text-align:left}.forecast-table td{text-align:right;padding:9px 11px;border-bottom:1px solid #f0f1f6;color:#5f657b}
+.forecast-table tr:last-child td{border-bottom:0}.forecast-table tr.current-row td{background:#f4f2ff;color:var(--text);font-weight:760}.forecast-table tr.total-row td{background:#f8f8fc;color:var(--text);font-weight:800}
+.hist{color:#545a73;font-weight:760}.model{color:#6557ba;font-weight:820}.dash{color:#a0a4b4}.pp{color:#178a63;font-weight:760}
+.organic-zone{display:grid;grid-template-columns:1fr;gap:16px;padding:24px 28px;border-top:1px solid var(--line);background:#fcfcff}
+.insight-card{border:1px solid #e4e3ef;border-radius:18px;padding:20px;background:#fff}.insight-card.accent{border-color:#d9d4f4;background:linear-gradient(145deg,#faf9ff,#f4f1ff)}
+.insight-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.insight-value{font-size:30px;font-weight:850;color:#302b62;margin:8px 0 3px}.insight-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px}.insight-copy{font-size:11px;line-height:1.55;color:var(--muted)}
+.method{border-top:1px solid var(--line);padding:20px 28px 22px;background:#f8f9fc}.method h3{font-size:14px;margin:0 0 11px}.method-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 24px}.method-item{font-size:11px;line-height:1.55;color:#686e84}.method-item strong{display:block;color:var(--text);font-size:11px;margin-bottom:2px}.method-note{margin-top:12px;padding-top:12px;border-top:1px solid #e4e6ef;font-size:10.5px;line-height:1.55;color:#7a8096}
+footer{color:#8e93a7;font-size:11px;text-align:center;padding:22px}
+@media(max-width:850px){
+ .top{align-items:flex-start;flex-direction:column}
+ .controls{width:100%;flex-direction:column;align-items:stretch}
+ .select{width:100%}.kpis{grid-template-columns:1fr}
+ .bars{gap:12px;padding:10px 0}.bar-stack{width:48px}
+ .details{grid-template-columns:1fr}.forecast-kpis{grid-template-columns:1fr}.forecast-grid{grid-template-columns:1fr}.forecast-table-wrap{border-right:0;border-bottom:1px solid var(--line)}.forecast-header{flex-direction:column}.organic-zone{grid-template-columns:1fr}.method-grid{grid-template-columns:1fr}.funnel-callout{grid-template-columns:1fr}.pace-grid{grid-template-columns:1fr}.pace-item{border-right:0;border-bottom:1px solid #eef0f5}.pace-item:last-child{border-bottom:0}.pace-head{flex-direction:column}.wrap{padding:18px}
+}
+
+/* v12 flow */
+.flow-title{margin:26px 2px 12px;display:flex;align-items:end;justify-content:space-between;gap:18px}
+.flow-title h2{margin:0;font-size:20px}.flow-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.flow-no{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6d63c7;font-weight:850;margin-bottom:5px}
+.hero-summary{padding:26px 30px;margin-bottom:24px;background:linear-gradient(135deg,#4a43a5 0%,#6c58d1 55%,#806be7 100%);border-color:#6256c5;color:#fff;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;box-shadow:0 18px 40px rgba(72,61,164,.22)}
+.hero-eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:850;color:rgba(255,255,255,.75)}
+.hero-value{font-size:58px;font-weight:900;line-height:1;margin:9px 0 8px}.hero-copy{font-size:13px;line-height:1.5;color:rgba(255,255,255,.82);max-width:680px}.hero-side{text-align:right;min-width:230px}.hero-target{font-size:13px;color:rgba(255,255,255,.74)}.hero-delta{font-size:22px;font-weight:850;margin-top:4px}.hero-progress{height:10px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:14px}.hero-progress>div{height:100%;background:#fff;border-radius:999px;width:0}.hero-meta{margin-top:8px;font-size:11px;color:rgba(255,255,255,.74)}
+.current-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.current-kpis .kpi{min-height:226px}.current-kpis .value{font-size:38px;margin:13px 0 12px}.current-p1{background:linear-gradient(145deg,#fbfaff,#f3f0ff);border-color:#dcd7f5}.current-p1 .value{color:#5148aa}.kpi-plan{margin:2px 0 12px;padding:10px 11px;border-radius:12px;background:#f7f7fb}.kpi-plan-top{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted)}.kpi-plan-top strong{color:var(--text)}.kpi-plan-track{height:6px;background:#e7e8f0;border-radius:99px;overflow:hidden;margin-top:7px}.kpi-plan-fill{height:100%;background:linear-gradient(90deg,#5156d8,#9b7bea);border-radius:99px;width:0}.kpi-plan-status{font-size:10.5px;margin-top:6px;color:var(--muted)}.kpi-plan-status.goodtext{color:var(--green)}.kpi-plan-status.badtext{color:var(--red)}
+.bar-visual{height:230px;position:relative;display:flex;align-items:flex-end;justify-content:center}.bar-visual .bar-stack{position:absolute;bottom:0;left:50%;transform:translateX(-50%)}.plan-outline{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:88px;border:2px dashed #bbb5df;border-radius:14px 14px 6px 6px;background:rgba(111,96,205,.035)}.plan-tag{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:800;color:#6c63a8;background:#f2efff;border:1px solid #ddd7fa;border-radius:999px;padding:4px 7px}.bar-plan-copy{font-size:10px;color:#6d63a8;font-weight:750;margin-top:5px}
+.pace-standalone{padding:0;overflow:hidden}.pace-standalone .pace-block{margin:0;border:0;border-radius:0}.pace-standalone .pace-head{padding:23px 25px 15px}.pace-standalone .pace-item{padding:22px 24px}.pace-standalone .pace-note{padding:12px 24px 15px}
+.forecast-kpis.v12{grid-template-columns:repeat(3,1fr)}.forecast-kpis.v12 .forecast-mini-value{font-size:34px}.forecast-explain{margin:0 28px 24px;padding:15px 18px;border-radius:15px;background:#f7f5ff;border:1px solid #e0dcf6;font-size:12px;line-height:1.55;color:#666c84}.forecast-explain strong{color:var(--text)}
+.section-stack{display:grid;gap:18px}.mini-note{font-size:10.5px;color:var(--muted);line-height:1.45}
+@media(max-width:1000px){.current-kpis{grid-template-columns:repeat(2,1fr)}.hero-summary{grid-template-columns:1fr}.hero-side{text-align:left}}
+@media(max-width:850px){.current-kpis{grid-template-columns:1fr}.hero-value{font-size:48px}.hero-summary{padding:23px}.forecast-kpis.v12{grid-template-columns:1fr}.flow-title{align-items:flex-start;flex-direction:column}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div><h1>Fostra Leads</h1><div class="sub">Týdenní přehled leadů</div></div>
+    </div>
+    <div class="controls">
+      <div class="status"><span class="dot"></span><span id="status">Načítám živá data…</span></div>
+      <select id="week" class="select" aria-label="Vybraný týden"><option>Načítám data…</option></select>
+    </div>
+  </div>
+
+  <div class="card hero-summary">
+    <div>
+      <div class="hero-eyebrow">Predikce priorit č. 1 · 1. kolo</div>
+      <div class="hero-value" id="heroPredictedP1">–</div>
+      <div class="hero-copy" id="heroPredictedCopy">Predikce vychází z pevného business plánu 1 496 leadů a z vážené konverze podle aktuálního mixu sledovaných kanálů.</div>
+    </div>
+    <div class="hero-side">
+      <div class="hero-target">Cíl 1. kola</div>
+      <div class="hero-delta" id="heroPredictedDelta">90 P1</div>
+      <div class="hero-progress"><div id="heroPredictedProgress"></div></div>
+      <div class="hero-meta" id="heroPredictedMeta">–</div>
+    </div>
+  </div>
+
+  <div class="flow-title"><div><div class="flow-no">1 · Aktuální stav</div><h2>Jak si vedeme teď</h2><p>Vybraný týden, vztah k poměrnému měsíčnímu plánu a aktuálně vytvořený potenciál P1.</p></div></div>
+  <div class="current-kpis">
+    <div class="card kpi">
+      <div class="label">Total Leads</div><div class="value" id="total">–</div>
+      <div class="kpi-plan"><div class="kpi-plan-top"><span>Poměrný plán týdne</span><strong id="totalPlanTarget">–</strong></div><div class="kpi-plan-track"><div class="kpi-plan-fill" id="totalPlanFill"></div></div><div class="kpi-plan-status" id="totalPlanStatus">–</div></div>
+      <div class="deltas"><span class="pill" id="totalWow">–</span><span class="pill" id="totalYoy">–</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Key Leads</div><div class="value" id="key">–</div>
+      <div class="kpi-plan"><div class="kpi-plan-top"><span>Poměrný plán týdne</span><strong id="keyPlanTarget">–</strong></div><div class="kpi-plan-track"><div class="kpi-plan-fill" id="keyPlanFill"></div></div><div class="kpi-plan-status" id="keyPlanStatus">–</div></div>
+      <div class="deltas"><span class="pill" id="keyWow">–</span><span class="pill" id="keyYoy">–</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Secondary Leads</div><div class="value" id="secondary">–</div>
+      <div class="kpi-plan"><div class="kpi-plan-top"><span>Poměrný plán týdne</span><strong id="secPlanTarget">–</strong></div><div class="kpi-plan-track"><div class="kpi-plan-fill" id="secPlanFill"></div></div><div class="kpi-plan-status" id="secPlanStatus">–</div></div>
+      <div class="deltas"><span class="pill" id="secWow">–</span><span class="pill" id="secYoy">–</span></div>
+    </div>
+    <div class="card kpi current-p1">
+      <div class="label">Modelový potenciál P1 · dosud</div><div class="value" id="currentP1">–</div>
+      <div class="mini-note" id="currentP1Sub">Z identifikovaných touchpointů od W36 podle konzervativních kanálových koeficientů.</div>
+      <div class="progress-track"><div class="progress-fill" id="currentP1Progress"></div></div>
+      <div class="progress-meta"><span id="currentP1Pct">–</span><span>cíl 90</span></div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <div class="head"><div><h2>Srovnání období</h2><p>Vybraný týden vs. jeho poměrný plán, předchozí týden a stejné týdny minulých let.</p></div><div class="legend"><span><i class="keydot"></i>Key Leads</span><span><i class="secdot"></i>Secondary</span><span style="color:#7168a8">┄ plán týdne</span></div></div>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <div class="flow-title"><div><div class="flow-no">2 · Detail rozpadu</div><h2>Z čeho se výsledek skládá</h2><p>Rozpad Key a Secondary leadů a vývoj v čase.</p></div></div>
+  <div class="details">
+    <div class="card detail"><h3>Key Leads</h3><div id="keyDetail"></div></div>
+    <div class="card detail"><h3>Secondary Leads</h3><div id="secDetail"></div></div>
+  </div>
+  <div class="section-stack">
+    <div class="card section">
+      <div class="head"><div><h2>Roční trend key leadů</h2><p id="trendSub">Vývoj v daném roce</p></div><div class="legend"><span><i class="keydot" style="background:#2563eb"></i>Přihlášky</span><span><i class="keydot" style="background:#7c3aed"></i>DOD</span><span><i class="keydot" style="background:#db2777"></i>Ind. DOD</span><span><i class="keydot" style="background:#ea580c"></i>Přestup</span><span><i class="keydot" style="background:#16a34a"></i>Přípravné kurzy</span></div></div>
+      <div class="trend-wrap"><svg id="trend" class="trend-svg" viewBox="0 0 900 250" preserveAspectRatio="none"></svg></div>
+    </div>
+    <div class="card section">
+      <div class="head"><div><h2>Key Leads celkem: meziroční trend</h2><p id="yearCompareSub">Vybraný rok vs. předchozí rok</p></div><div class="legend" id="yearCompareLegend"></div></div>
+      <div class="trend-wrap"><svg id="yearCompare" class="trend-svg" viewBox="0 0 900 250" preserveAspectRatio="none"></svg></div>
+    </div>
+  </div>
+
+  <div class="flow-title"><div><div class="flow-no">3 · Příští týden</div><h2>Co musíme udělat dál</h2><p>Plán odvozený z měsíčního business plánu, loňský benchmark a kumulativní tempo.</p></div></div>
+  <div class="card pace-standalone">
+    <div class="pace-block">
+      <div class="pace-head"><div><h3>Tempo plánu · příští týden</h3><p>Kolik leadů potřebujeme udělat příští týden, co jsme ve stejném týdnu udělali loni a zda kumulativně držíme plán.</p></div><div class="pace-week" id="nextWeekLabel">–</div></div>
+      <div class="pace-grid">
+        <div class="pace-item"><div class="pace-label">Plán · příští týden</div><div class="pace-value" id="nextWeekPlanTotal">–</div><div class="pace-sub" id="nextWeekPlanBreakdown">–</div></div>
+        <div class="pace-item"><div class="pace-label">Stejný týden loni</div><div class="pace-value" id="lastYearWeekTotal">–</div><div class="pace-sub" id="lastYearWeekBreakdown">–</div></div>
+        <div class="pace-item status-neutral" id="planPaceCard"><div class="pace-label">Kumulativně vs. plán</div><div class="pace-value" id="planPaceValue">–</div><div class="pace-sub" id="planPaceSub">–</div></div>
+      </div>
+      <div class="pace-note">Poměrný týdenní plán není samostatný business cíl. Je rozpočítán z měsíčních cílů podle kalendářních dnů. U týdne na přelomu měsíců se skládá z příslušných částí obou měsíčních plánů.</div>
+    </div>
+  </div>
+
+  <div class="flow-title"><div><div class="flow-no">4 · Forecast</div><h2>Kam vede aktuální mix leadů</h2><p>Fixní leadový plán × vážená konverze, kanálový model a význam neidentifikovaného příspěvku.</p></div></div>
+  <div class="card forecast">
+    <div class="forecast-header"><div><h2>Forecast 1. kola</h2><p>Počet leadů je fixní podle business plánu. Predikce P1 se mění podle vážené konverze aktuálního mixu sledovaných kanálů.</p></div><div class="season-badge" id="seasonBadge">1. sezona</div></div>
+    <div class="forecast-kpis v12">
+      <div class="forecast-mini"><div class="forecast-mini-label">Business plán · leady 1. kola</div><div class="forecast-mini-value" id="projectedTotalLeads">1 496</div><div class="forecast-mini-sub" id="projectedTotalSub">Fixní plánovaný objem leadů pro 1. kolo; forecast jej nemění.</div><div class="progress-track"><div class="progress-fill" id="projectedTotalProgress"></div></div><div class="progress-meta"><span id="projectedTotalPct">100 % plánu</span><span>business plán</span></div></div>
+      <div class="forecast-mini primary"><div class="forecast-mini-label">Vážená modelová konverze</div><div class="forecast-mini-value" id="avgConversionValue">–</div><div class="forecast-mini-sub" id="avgConversionSub">Podle aktuálního mixu kanálů a jejich schválených P1 koeficientů.</div><div class="progress-meta"><span>aktuální mix kanálů</span><span id="historicalBenchmark">historie 6,7 % jen benchmark</span></div></div>
+      <div class="forecast-mini hero"><div class="forecast-mini-label">Predikce 1. priorit · 1. kolo</div><div class="forecast-mini-value" id="predictedP1Value">–</div><div class="forecast-mini-sub" id="predictedP1Sub">Business plán 1 496 × vážená modelová konverze.</div><div class="progress-track"><div class="progress-fill" id="predictedP1Progress"></div></div><div class="progress-meta"><span id="predictedP1Delta">–</span><span>cíl 90</span></div></div>
+    </div>
+    <div class="forecast-explain" id="forecastExplain">–</div>
+
+    <div class="forecast-grid">
+      <div class="forecast-table-wrap"><h3>Kumulativní kanálový model</h3><p id="forecastSub">Od W36 do vybraného týdne. Zobrazuje evidované touchpointy; překryvy lidí mezi kanály nejsou deduplikované.</p><div class="forecast-scroll"><table class="forecast-table"><thead><tr><th>Týden</th><th>Modelové leady</th><th>Key Leads</th><th>Odhad P1</th><th>% z 90</th></tr></thead><tbody id="forecastBody"></tbody></table></div></div>
+      <div class="forecast-table-wrap"><h3>Kanálové předpoklady modelu</h3><p>Konzervativní konverzní koeficienty pro orientační potenciál již získaných touchpointů.</p><div class="forecast-scroll"><table class="forecast-table"><thead><tr><th>Kanál</th><th>Konverze</th><th>Leady od W36</th><th>Model P1</th></tr></thead><tbody id="channelBody"></tbody></table></div></div>
+    </div>
+
+    <div class="organic-zone"><div class="insight-card accent"><div class="insight-eyebrow">Neidentifikovaný / organický příspěvek · historický benchmark</div><div class="insight-value">20,2 %</div><div class="insight-title">99 lidí → 20 priorit č. 1</div><div class="insight-copy">U 99 uchazečů jsme nedokázali identifikovat zdroj; 20 z nich zvolilo Fostru jako prioritu č. 1. Tato skupina tedy konvertovala 20,2 % a vytvořila 30,3 % všech 66 prvních priorit. <strong>Kanálový live model ji automaticky nepřičítá</strong>; sezonní celková konverze ji naopak historicky zachycuje jako součást celého funnelu.</div></div></div>
+
+    <div class="method"><h3>Legenda · jak číst forecast</h3><div class="method-grid">
+      <div class="method-item"><strong>Predikce P1</strong>Počet leadů je pevně daný business plánem: 1 496. Na tento objem se aplikuje vážená modelová konverze vypočtená z aktuálního mixu sledovaných kanálů.</div>
+      <div class="method-item"><strong>Modelový potenciál P1 · dosud</strong>Σ (dosud získané leady daného kanálu × jeho P1 koeficient). Ukazuje, kolik P1 dnes modelově vytváří již získané leady; nejde o potvrzené unikátní P1.</div>
+      <div class="method-item"><strong>Poměrný plán týdne</strong>Odvozený z měsíčního business plánu podle počtu kalendářních dnů. Není to samostatně schválený týdenní budget/cíl.</div>
+      <div class="method-item"><strong>Překryv kanálů</strong>Jeden člověk může projít více aktivitami, proto jednotlivé touchpointy nesčítáme jako unikátní studenty.</div>
+    </div><div class="method-note"><strong>Kanálové koeficienty:</strong> Přihlášky 4 % · DOD 5 % · Individuální DOD 5 % · Přípravné kurzy 2,5 % · Chat 0,8 %. Den na nečisto má model 8 %, ale v současném live zdroji není oddělen jako samostatný sloupec, proto jej dashboard zatím zvlášť nepřičítá. Popup ani Newsletter do kanálového P1 modelu nevstupují.<br><span style="opacity:.78">Historická celková konverze 6,7 % (66 P1 / 988 leadů) slouží pouze jako benchmark a není vstupem do letošní predikce. Hosting letos jako samostatný náborový kanál neplánujeme; zůstává pouze historickou metodickou poznámkou.</span></div></div>
+  </div>
+
+  <footer id="footer">Zdroj: Fostra Leads API · načítám živá data</footer>
+</div>
+<script>
+let DATA=[];
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQHcYv-r8uosvEI4amr5_wL6wlnbE156MxZfi0mPpVDYLwXVbSg7POJgpuWSPaP2Q6-ayW4TY2XLRe5/pub?gid=2145433271&single=true&output=csv';
+const KEY=[['applications','Přihlášky'],['dod','DOD (den nanečisto)'],['individual_dod','Ind. DOD'],['transfer','Přestup'],['courses','Přípravné kurzy']];
+const SEC=[['chat','Kontakty (chat)'],['questions','Dotazy'],['newsletter','Newsletter'],['popup','Popup']];
+const DIPSY_GOAL=90;
+const SEASON_KEY_GOAL=920;
+const SEASON_TOTAL_LEADS_PLAN=1496;
+const ANNUAL_STUDENT_GOAL=132;
+const FORECAST_START_WEEK=36;
+const HISTORICAL_FUNNEL_LEADS=988;
+const HISTORICAL_FUNNEL_P1=66;
+const HISTORICAL_FUNNEL_RATE=HISTORICAL_FUNNEL_P1/HISTORICAL_FUNNEL_LEADS;
+const REQUIRED_FUNNEL_RATE=DIPSY_GOAL/SEASON_TOTAL_LEADS_PLAN;
+const SEASON_PLAN_START_YEAR=2026;
+const MONTHLY_PLAN={
+  9:{total:116,key:40,secondary:76},
+  10:{total:164,key:84,secondary:80},
+  11:{total:271,key:177,secondary:94},
+  12:{total:198,key:117,secondary:81},
+  1:{total:432,key:314,secondary:118},
+  2:{total:315,key:188,secondary:127}
+};
+const MODEL_RATES={applications:0.04,dod:0.05,individual_dod:0.05,courses:0.025,chat:0.008};
+const CHANNEL_MODEL={
+ applications:{label:'Přihlášky',historical:null,model:0.04},
+ dod:{label:'DOD',historical:34/557,model:0.05},
+ individual_dod:{label:'Ind. DOD',historical:5/85,model:0.05},
+ courses:{label:'Přípravné kurzy',historical:5/106,model:0.025},
+ chat:{label:'Chat',historical:2/112,model:0.008}
+};
+
+function fd(s){
+ const d=new Date(s+'T00:00:00');
+ return d.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'});
+}
+function find(y,w){return DATA.find(x=>x.year===y&&x.week===w)}
+function pct(a,b){return b?((a-b)/b*100):null}
+function delta(id,l,v){
+ const e=document.getElementById(id); e.className='pill';
+ if(v==null){e.textContent=l+': –';return}
+ e.textContent=l+': '+(v>0?'+':'')+Math.round(v)+' %';
+ if(v>0)e.classList.add('good'); if(v<0)e.classList.add('bad');
+}
+function detailValue(row,key){return row?row[key]:'–'}
+function periodLabel(row,fallback){return row?'W'+row.week+' / '+row.year:fallback}
+function sumForItems(items,row){return row?items.reduce((s,[k])=>s+(Number(row[k])||0),0):'–'}
+function renderCompareTable(items,current,previous,yearAgo){
+ const head='<div class="compare-head"><span></span>'+ 
+   '<span><b>'+periodLabel(current,'–')+'</b><small>aktuální</small></span>'+ 
+   '<span><b>'+periodLabel(previous,'–')+'</b><small>týden před</small></span>'+ 
+   '<span><b>'+periodLabel(yearAgo,'–')+'</b><small>před rokem</small></span></div>';
+ const sumRow='<div class="compare-row sum"><span class="metric">Součet</span>'+ 
+   '<span class="num current">'+sumForItems(items,current)+'</span>'+ 
+   '<span class="num">'+sumForItems(items,previous)+'</span>'+ 
+   '<span class="num">'+sumForItems(items,yearAgo)+'</span></div>';
+ const rows=items.map(([k,l])=>
+   '<div class="compare-row"><span class="metric">'+l+'</span>'+ 
+   '<span class="num current">'+detailValue(current,k)+'</span>'+ 
+   '<span class="num">'+detailValue(previous,k)+'</span>'+ 
+   '<span class="num">'+detailValue(yearAgo,k)+'</span></div>'
+ ).join('');
+ return '<div class="compare">'+head+sumRow+rows+'</div>';
+}
+
+function cz1(v){
+ return Number(v).toLocaleString('cs-CZ',{minimumFractionDigits:1,maximumFractionDigits:1});
+}
+function pctFmt(v,digits=1){
+ return Number(v*100).toLocaleString('cs-CZ',{minimumFractionDigits:digits,maximumFractionDigits:digits})+' %';
+}
+function seasonStartYearFor(row){
+ const d=new Date(row.date_from+'T00:00:00');
+ const m=d.getMonth()+1;
+ const y=d.getFullYear();
+ if(m>=8) return y;
+ return y-1;
+}
+function seasonRowsFor(row){
+ const sy=seasonStartYearFor(row);
+ const selectedDate=row.date_from;
+ const endDate=(sy+1)+'-03-01';
+ const cutoff=selectedDate<endDate?selectedDate:endDate;
+ return DATA.filter(x=>{
+   const inStartYear=(x.year===sy && x.week>=FORECAST_START_WEEK);
+   const inNextYear=(x.year===sy+1 && x.date_from<endDate);
+   return (inStartYear||inNextYear) && x.date_from<=cutoff;
+ }).sort((a,b)=>a.date_from.localeCompare(b.date_from));
+}
+function isoWeekInfo(date){
+ const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+ const day=d.getUTCDay()||7;
+ d.setUTCDate(d.getUTCDate()+4-day);
+ const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+ const week=Math.ceil((((d-yearStart)/86400000)+1)/7);
+ return {year:d.getUTCFullYear(),week};
+}
+function addDays(date,n){
+ const d=new Date(date.getTime()); d.setDate(d.getDate()+n); return d;
+}
+function daysInMonth(year,month){return new Date(year,month,0).getDate()}
+function planForDate(date){
+ const m=date.getMonth()+1, y=date.getFullYear();
+ const valid=(y===SEASON_PLAN_START_YEAR && m>=9)||(y===SEASON_PLAN_START_YEAR+1 && m<=2);
+ if(!valid || !MONTHLY_PLAN[m]) return {total:0,key:0,secondary:0};
+ const dim=daysInMonth(y,m), p=MONTHLY_PLAN[m];
+ return {total:p.total/dim,key:p.key/dim,secondary:p.secondary/dim};
+}
+function planForRange(start,end){
+ const sum={total:0,key:0,secondary:0};
+ for(let d=new Date(start.getFullYear(),start.getMonth(),start.getDate()); d<=end; d=addDays(d,1)){
+   const p=planForDate(d); sum.total+=p.total; sum.key+=p.key; sum.secondary+=p.secondary;
+ }
+ return sum;
+}
+function renderPlanPace(r,summary){
+ const currentEnd=new Date(r.date_to+'T00:00:00');
+ const nextStart=addDays(currentEnd,1), nextEnd=addDays(nextStart,6);
+ const nextIso=isoWeekInfo(nextStart);
+ const nextPlan=planForRange(nextStart,nextEnd);
+ const lastYear=find(nextIso.year-1,nextIso.week);
+ const seasonStart=new Date(SEASON_PLAN_START_YEAR,8,1);
+ const paceEnd=currentEnd;
+ const plannedToDate=paceEnd>=seasonStart?planForRange(seasonStart,paceEnd):{total:0,key:0,secondary:0};
+ const totalDiff=summary.total-plannedToDate.total;
+ const keyDiff=summary.key-plannedToDate.key;
+
+ document.getElementById('nextWeekLabel').textContent='W'+nextIso.week+' / '+nextIso.year+' · '+fd(nextStart.toISOString().slice(0,10))+'–'+fd(nextEnd.toISOString().slice(0,10));
+ document.getElementById('nextWeekPlanTotal').textContent=Math.round(nextPlan.total).toLocaleString('cs-CZ')+' leadů';
+ document.getElementById('nextWeekPlanBreakdown').innerHTML='<strong>Key '+Math.round(nextPlan.key).toLocaleString('cs-CZ')+'</strong> · Secondary '+Math.round(nextPlan.secondary).toLocaleString('cs-CZ');
+
+ if(lastYear){
+   document.getElementById('lastYearWeekTotal').textContent=lastYear.total.toLocaleString('cs-CZ')+' leadů';
+   const vsPlan=lastYear.total-Math.round(nextPlan.total);
+   document.getElementById('lastYearWeekBreakdown').innerHTML='<strong>Key '+lastYear.key.toLocaleString('cs-CZ')+'</strong> · Secondary '+lastYear.secondary.toLocaleString('cs-CZ')+' · '+(vsPlan>=0?'+':'')+vsPlan+' vs. letošní plán';
+ }else{
+   document.getElementById('lastYearWeekTotal').textContent='–';
+   document.getElementById('lastYearWeekBreakdown').textContent='Pro stejný týden minulého roku nejsou data.';
+ }
+
+ const paceCard=document.getElementById('planPaceCard');
+ paceCard.className='pace-item '+(totalDiff>=1?'status-good':totalDiff<=-1?'status-bad':'status-neutral');
+ document.getElementById('planPaceValue').textContent=(totalDiff>=0?'+':'')+Math.round(totalDiff).toLocaleString('cs-CZ')+' leadů';
+ document.getElementById('planPaceSub').innerHTML='Skutečnost <strong>'+Math.round(summary.total).toLocaleString('cs-CZ')+'</strong> / plán k datu <strong>'+Math.round(plannedToDate.total).toLocaleString('cs-CZ')+'</strong><br>Key: '+Math.round(summary.key).toLocaleString('cs-CZ')+' / '+Math.round(plannedToDate.key).toLocaleString('cs-CZ')+' ('+(keyDiff>=0?'+':'')+Math.round(keyDiff)+')';
+}
+
+function funnelModelForRows(rows){
+ const sums={applications:0,dod:0,individual_dod:0,courses:0,chat:0};
+ rows.forEach(r=>Object.keys(sums).forEach(k=>sums[k]+=Number(r[k])||0));
+ const key=rows.reduce((s,r)=>s+(Number(r.applications)||0)+(Number(r.dod)||0)+(Number(r.individual_dod)||0)+(Number(r.transfer)||0)+(Number(r.courses)||0),0);
+ const total=rows.reduce((s,r)=>s+(Number(r.applications)||0)+(Number(r.dod)||0)+(Number(r.individual_dod)||0)+(Number(r.transfer)||0)+(Number(r.courses)||0)+(Number(r.chat)||0)+(Number(r.questions)||0)+(Number(r.newsletter)||0)+(Number(r.popup)||0),0);
+ const modelLeads=Object.values(sums).reduce((a,b)=>a+b,0);
+ const dipsy=Object.keys(sums).reduce((s,k)=>s+sums[k]*MODEL_RATES[k],0);
+ return {sums,key,total,modelLeads,dipsy,keyPct:key/SEASON_KEY_GOAL,totalPct:total/SEASON_TOTAL_LEADS_PLAN,dipsyPct:dipsy/DIPSY_GOAL};
+}
+
+function activePlanForRow(r){
+ return seasonStartYearFor(r)===SEASON_PLAN_START_YEAR;
+}
+function plannedToDateForRow(r){
+ if(!activePlanForRow(r)) return {total:0,key:0,secondary:0};
+ const start=new Date(SEASON_PLAN_START_YEAR,8,1);
+ const end=new Date(r.date_to+'T00:00:00');
+ return end>=start?planForRange(start,end):{total:0,key:0,secondary:0};
+}
+function weekPlanForRow(r){
+ if(!activePlanForRow(r)) return {total:0,key:0,secondary:0};
+ return planForRange(new Date(r.date_from+'T00:00:00'),new Date(r.date_to+'T00:00:00'));
+}
+function updateWeekPlanCard(prefix,actual,target){
+ const t=document.getElementById(prefix+'PlanTarget'),f=document.getElementById(prefix+'PlanFill'),s=document.getElementById(prefix+'PlanStatus');
+ if(!t||!f||!s) return;
+ if(!target){t.textContent='–';f.style.width='0%';s.textContent='Plán je definovaný pro sezonu 2026/27';s.className='kpi-plan-status';return;}
+ const rounded=Math.round(target),ratio=rounded?actual/rounded:0,diff=actual-rounded;
+ t.textContent=rounded.toLocaleString('cs-CZ'); f.style.width=Math.min(100,ratio*100)+'%';
+ s.textContent=Math.round(ratio*100)+' % plánu · '+(diff>=0?'+':'')+diff+' leadů';
+ s.className='kpi-plan-status '+(diff>=0?'goodtext':'badtext');
+}
+function weightedModelRate(summary){
+ return summary.modelLeads?summary.dipsy/summary.modelLeads:0;
+}
+function projectionFor(r,summary){
+ const planned=plannedToDateForRow(r);
+ const weightedRate=weightedModelRate(summary);
+ const predictedP1=SEASON_TOTAL_LEADS_PLAN*weightedRate;
+ return {planned,projectedTotal:SEASON_TOTAL_LEADS_PLAN,weightedRate,predictedP1};
+}
+
+function renderForecast(r){
+ const seasonRows=seasonRowsFor(r);
+ const summary=funnelModelForRows(seasonRows);
+ const sy=seasonStartYearFor(r);
+ const seasonLabel=sy+'/'+String(sy+1).slice(-2);
+ const projection=projectionFor(r,summary);
+ document.getElementById('seasonBadge').textContent='1. sezona '+seasonLabel;
+ renderPlanPace(r,summary);
+
+ // current identified-channel potential
+ document.getElementById('currentP1').textContent='≈ '+cz1(summary.dipsy);
+ document.getElementById('currentP1Progress').style.width=Math.min(100,summary.dipsy/DIPSY_GOAL*100)+'%';
+ document.getElementById('currentP1Pct').textContent=Math.round(summary.dipsy/DIPSY_GOAL*100)+' % cíle';
+ document.getElementById('currentP1Sub').textContent='Výpočet: Σ (leady kanálu od W'+FORECAST_START_WEEK+' × jeho P1 koeficient) · bez organického příspěvku';
+
+ // end-of-season projection: fixed lead plan × weighted conversion of the current channel mix
+ const projectedTotal=SEASON_TOTAL_LEADS_PLAN;
+ const weightedRate=projection.weightedRate;
+ const predictedP1=projection.predictedP1;
+ document.getElementById('projectedTotalLeads').textContent=SEASON_TOTAL_LEADS_PLAN.toLocaleString('cs-CZ');
+ document.getElementById('projectedTotalProgress').style.width='100%';
+ document.getElementById('projectedTotalPct').textContent='100 % plánu';
+ document.getElementById('projectedTotalSub').textContent='Fixní business plán pro 1. kolo.';
+ document.getElementById('avgConversionValue').textContent=weightedRate?pctFmt(weightedRate,1):'–';
+ document.getElementById('avgConversionSub').textContent=weightedRate?'Σ (podíl kanálu × P1 koeficient) · aktuální mix '+summary.modelLeads.toLocaleString('cs-CZ')+' sledovaných leadů.':'Váženou konverzi zatím nelze spočítat.';
+ document.getElementById('predictedP1Value').textContent=weightedRate?'≈ '+Math.round(predictedP1).toLocaleString('cs-CZ'):'–';
+ document.getElementById('predictedP1Progress').style.width=weightedRate?Math.min(100,predictedP1/DIPSY_GOAL*100)+'%':'0%';
+ const p1Delta=weightedRate?Math.round(predictedP1-DIPSY_GOAL):0;
+ document.getElementById('predictedP1Delta').textContent=weightedRate?((p1Delta>=0?'+':'')+p1Delta+' vůči cíli'):'–';
+ document.getElementById('predictedP1Sub').textContent=weightedRate?'1 496 leadů × '+pctFmt(weightedRate,1)+' vážená konverze = ≈ '+Math.round(predictedP1)+' P1.':'Čekám na dostatek dat pro váženou konverzi.';
+
+ // hero
+ document.getElementById('heroPredictedP1').textContent=weightedRate?'≈ '+Math.round(predictedP1).toLocaleString('cs-CZ'):'–';
+ document.getElementById('heroPredictedProgress').style.width=weightedRate?Math.min(100,predictedP1/DIPSY_GOAL*100)+'%':'0%';
+ document.getElementById('heroPredictedDelta').textContent=weightedRate?((p1Delta>=0?'+':'')+p1Delta+' vs. cíl 90'):'cíl 90';
+ document.getElementById('heroPredictedMeta').textContent=weightedRate?'Plán 1 496 leadů · vážená konverze '+pctFmt(weightedRate,1):'Plán 1 496 leadů';
+ document.getElementById('heroPredictedCopy').textContent=weightedRate?'Výpočet: 1 496 plánovaných leadů × '+pctFmt(weightedRate,1)+' vážená konverze podle aktuálního mixu sledovaných kanálů. Historických 6,7 % je pouze benchmark.':'Predikce bude dostupná po načtení aktuálního mixu kanálů.';
+
+ document.getElementById('forecastExplain').innerHTML='<strong>Co už máme modelově vytvořeno:</strong> dosud získané identifikované touchpointy od W'+FORECAST_START_WEEK+' dávají potenciál <strong>≈ '+cz1(summary.dipsy)+' P1</strong> = Σ (leady kanálu × jeho P1 koeficient). <strong>Sezonní predikce:</strong> pevný business plán <strong>1 496 leadů</strong> × aktuální vážená konverze <strong>'+pctFmt(weightedRate,1)+'</strong> = <strong>≈ '+Math.round(predictedP1)+' P1</strong>. Historická průměrná konverze 6,7 % do forecastu nevstupuje.';
+
+ if(!seasonRows.length){
+   document.getElementById('forecastBody').innerHTML='<tr class="current-row"><td colspan="5" style="text-align:center">1. sezona se začíná sledovat od W'+FORECAST_START_WEEK+'</td></tr>';
+ }else{
+   const cumulative=[];
+   document.getElementById('forecastBody').innerHTML=seasonRows.map(row=>{
+     cumulative.push(row); const f=funnelModelForRows(cumulative); const isCurrent=row.date_from===seasonRows[seasonRows.length-1].date_from;
+     return '<tr'+(isCurrent?' class="current-row"':'')+'><td>W'+row.week+' / '+row.year+'</td><td>'+Math.round(f.modelLeads).toLocaleString('cs-CZ')+'</td><td>'+Math.round(f.key).toLocaleString('cs-CZ')+'</td><td>'+cz1(f.dipsy)+'</td><td>'+Math.round(f.dipsyPct*100)+' %</td></tr>';
+   }).join('');
+ }
+ document.getElementById('forecastSub').textContent='Kumulativně od W'+FORECAST_START_WEEK+' · 1. sezona '+seasonLabel+' · touchpointy nejsou deduplikované';
+ document.getElementById('channelBody').innerHTML=Object.entries(CHANNEL_MODEL).map(([k,v])=>{const leads=summary.sums[k]||0,forecast=leads*v.model;return '<tr><td>'+v.label+'</td><td class="model">'+pctFmt(v.model,1)+'</td><td>'+leads.toLocaleString('cs-CZ')+'</td><td class="pp">'+cz1(forecast)+'</td></tr>';}).join('')+'<tr class="total-row"><td>Model celkem</td><td>–</td><td>'+summary.modelLeads.toLocaleString('cs-CZ')+'</td><td>'+cz1(summary.dipsy)+'</td></tr>';
+ const scrolls=document.querySelectorAll('.forecast-scroll'); requestAnimationFrame(()=>scrolls.forEach(s=>s.scrollTop=s.scrollHeight));
+}
+
+function render(){
+ const sel=document.getElementById('week'); const idx=Number(sel.value); const r=DATA[idx] || DATA[DATA.length-1]; const i=DATA.indexOf(r);
+ const p=i>0?DATA[i-1]:null; const y1=find(r.year-1,r.week); const y2=find(r.year-2,r.week);
+ document.getElementById('total').textContent=r.total; document.getElementById('key').textContent=r.key; document.getElementById('secondary').textContent=r.secondary;
+ delta('totalWow','WoW',p?pct(r.total,p.total):null); delta('totalYoy','YoY',y1?pct(r.total,y1.total):null);
+ delta('keyWow','WoW',p?pct(r.key,p.key):null); delta('keyYoy','YoY',y1?pct(r.key,y1.key):null);
+ delta('secWow','WoW',p?pct(r.secondary,p.secondary):null); delta('secYoy','YoY',y1?pct(r.secondary,y1.secondary):null);
+ const wp=weekPlanForRow(r);
+ updateWeekPlanCard('total',r.total,wp.total); updateWeekPlanCard('key',r.key,wp.key); updateWeekPlanCard('sec',r.secondary,wp.secondary);
+ renderBars([{n:'Vybraný týden',r,plan:wp.total},{n:'Předchozí týden',r:p},{n:'Stejný týden −1 rok',r:y1},{n:'Stejný týden −2 roky',r:y2}]);
+ renderTrend(r); renderYearCompare(r); renderForecast(r);
+ document.getElementById('keyDetail').innerHTML=renderCompareTable(KEY,r,p,y1); document.getElementById('secDetail').innerHTML=renderCompareTable(SEC,r,p,y1);
+ document.getElementById('trendSub').textContent='Vývoj od W1 do W'+r.week+' / '+r.year; document.getElementById('yearCompareSub').textContent='W1–W'+r.week+' · '+r.year+' vs. '+(r.year-1);
+ document.getElementById('footer').textContent='Zdroj: Fostra Leads API · vybraný týden '+r.week+'/'+r.year;
+}
+
+function renderBars(items){
+ const m=Math.max(1,...items.flatMap(x=>[x.r?x.r.total:0,x.plan||0]));
+ document.getElementById('bars').innerHTML=items.map((x,idx)=>{
+  const r=x.r; if(!r)return '<div class="bar-col"><div class="bar-value">–</div><div class="bar-visual"></div><div class="bar-label">'+x.n+'</div><div class="bar-date">bez dat</div></div>';
+  const h=Math.max(16,r.total/m*220),kh=r.total?r.key/r.total*100:0,sh=r.total?r.secondary/r.total*100:0;
+  let plan=''; let plancopy='';
+  if(x.plan){const ph=Math.max(16,x.plan/m*220),ratio=x.plan?r.total/x.plan:0;plan='<div class="plan-outline" style="height:'+ph+'px"></div><div class="plan-tag" style="bottom:'+(ph+7)+'px">plán '+Math.round(x.plan)+'</div>';plancopy='<div class="bar-plan-copy">'+Math.round(ratio*100)+' % poměrného plánu · '+(Math.round(r.total-x.plan)>=0?'+':'')+Math.round(r.total-x.plan)+'</div>';}
+  return '<div class="bar-col"><div class="bar-value">'+r.total+'</div><div class="bar-visual">'+plan+'<div class="bar-stack" style="height:'+h+'px"><div class="seg-key" style="height:'+kh+'%"></div><div class="seg-sec" style="height:'+sh+'%"></div></div></div><div class="bar-label">'+x.n+'</div><div class="bar-date">W'+r.week+' · '+fd(r.date_from)+'–'+fd(r.date_to)+' '+r.year+'</div>'+plancopy+'</div>';
+ }).join('');
+}
+
+function renderTrend(r){
+ const d=DATA.filter(x=>x.year===r.year && x.week<=r.week);
+ const W=900,H=250,p={l:42,r:12,t:12,b:26};
+ const metrics=[
+   {k:'applications',color:'#2563eb'},
+   {k:'dod',color:'#7c3aed'},
+   {k:'individual_dod',color:'#db2777'},
+   {k:'transfer',color:'#ea580c'},
+   {k:'courses',color:'#16a34a'}
+ ];
+ const maxVal=Math.max(1,...d.flatMap(x=>metrics.map(m=>Number(x[m.k])||0)));
+ const xx=i=>p.l+(W-p.l-p.r)*(d.length===1?0:i/(d.length-1));
+ const yy=v=>p.t+(H-p.t-p.b)*(1-v/maxVal);
+ let s='';
+ for(let j=0;j<5;j++){
+   const y=p.t+(H-p.t-p.b)*j/4;
+   s+='<line class="grid" x1="'+p.l+'" y1="'+y+'" x2="'+(W-p.r)+'" y2="'+y+'"/>';
+ }
+ const labelVal=i=>Math.round(maxVal*(1-i/4));
+ for(let j=0;j<5;j++){
+   const y=p.t+(H-p.t-p.b)*j/4;
+   s+='<text class="axis" text-anchor="end" x="'+(p.l-6)+'" y="'+(y+3)+'">'+labelVal(j)+'</text>';
+ }
+ metrics.forEach(m=>{
+   const path=d.map((x,i)=>(i?'L':'M')+xx(i)+','+yy(x[m.k])).join(' ');
+   s+='<path d="'+path+'" fill="none" stroke="'+m.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+   d.forEach((x,i)=>{
+     if(i===d.length-1 || i===0 || i%4===0){
+       s+='<circle cx="'+xx(i)+'" cy="'+yy(x[m.k])+'" r="2.8" fill="'+m.color+'" stroke="#fff" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+     }
+   });
+ });
+ d.forEach((x,i)=>{
+   if(i===0||i===d.length-1||i%4===0) s+='<text class="axis" text-anchor="middle" x="'+xx(i)+'" y="'+(H-6)+'">W'+x.week+'</text>';
+ });
+ document.getElementById('trend').innerHTML=s;
+}
+
+function renderYearCompare(r){
+ const currentYear=r.year;
+ const prevYear=r.year-1;
+ const maxWeek=r.week;
+ const current=DATA.filter(x=>x.year===currentYear && x.week<=maxWeek);
+ const previous=DATA.filter(x=>x.year===prevYear && x.week<=maxWeek);
+ const byWeek=(arr)=>Object.fromEntries(arr.map(x=>[x.week,x]));
+ const curMap=byWeek(current), prevMap=byWeek(previous);
+ const weeks=Array.from({length:maxWeek},(_,i)=>i+1);
+ const W=900,H=250,p={l:42,r:12,t:12,b:26};
+ const vals=weeks.flatMap(w=>[(curMap[w]?.key)||0,(prevMap[w]?.key)||0]);
+ const maxVal=Math.max(1,...vals);
+ const xx=i=>p.l+(W-p.l-p.r)*(weeks.length===1?0:i/(weeks.length-1));
+ const yy=v=>p.t+(H-p.t-p.b)*(1-v/maxVal);
+ let s='';
+ for(let j=0;j<5;j++){
+   const y=p.t+(H-p.t-p.b)*j/4;
+   s+='<line class="grid" x1="'+p.l+'" y1="'+y+'" x2="'+(W-p.r)+'" y2="'+y+'"/>';
+   const val=Math.round(maxVal*(1-j/4));
+   s+='<text class="axis" text-anchor="end" x="'+(p.l-6)+'" y="'+(y+3)+'">'+val+'</text>';
+ }
+ const makePath=(map)=>weeks.map((w,i)=>(i?'L':'M')+xx(i)+','+yy((map[w]?.key)||0)).join(' ');
+ s+='<path d="'+makePath(curMap)+'" fill="none" stroke="#5156d8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+ s+='<path d="'+makePath(prevMap)+'" fill="none" stroke="#a8acc0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"/>';
+ weeks.forEach((w,i)=>{
+   if(i===0||i===weeks.length-1||i%4===0){
+     const a=(curMap[w]?.key)||0,b=(prevMap[w]?.key)||0;
+     s+='<circle cx="'+xx(i)+'" cy="'+yy(a)+'" r="2.8" fill="#5156d8" stroke="#fff" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+     s+='<circle cx="'+xx(i)+'" cy="'+yy(b)+'" r="2.8" fill="#a8acc0" stroke="#fff" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+     s+='<text class="axis" text-anchor="middle" x="'+xx(i)+'" y="'+(H-6)+'">W'+w+'</text>';
+   }
+ });
+ document.getElementById('yearCompare').innerHTML=s;
+ document.getElementById('yearCompareLegend').innerHTML=
+   '<span><i class="keydot" style="background:#5156d8"></i>'+currentYear+'</span>'+ 
+   '<span><i class="keydot" style="background:#a8acc0"></i>'+prevYear+'</span>';
+}
+
+
+function parseCSV(text){
+ const out=[]; let row=[],field='',quoted=false;
+ for(let i=0;i<text.length;i++){
+   const c=text[i],n=text[i+1];
+   if(c==='"'){
+     if(quoted&&n==='"'){field+='"';i++} else quoted=!quoted;
+   }else if(c===','&&!quoted){
+     row.push(field); field='';
+   }else if((c==='\n'||c==='\r')&&!quoted){
+     if(c==='\r'&&n==='\n') i++;
+     row.push(field); field='';
+     if(row.some(v=>v!=='')) out.push(row);
+     row=[];
+   }else field+=c;
+ }
+ if(field||row.length){row.push(field);out.push(row)}
+ return out;
+}
+
+function normalizeCSV(text){
+ const a=parseCSV(text);
+ if(a.length<2) throw new Error('CSV bez dat');
+ const headers=a[0].map(x=>x.trim());
+ return a.slice(1).map(r=>{
+   const o=Object.fromEntries(headers.map((h,i)=>[h,(r[i]??'').trim()]));
+   ['year','week','applications','dod','individual_dod','transfer','courses','chat','questions','newsletter','popup']
+     .forEach(k=>o[k]=Number(String(o[k]??'0').replace(',','.'))||0);
+   o.key=o.applications+o.dod+o.individual_dod+o.transfer+o.courses;
+   o.secondary=o.chat+o.questions+o.newsletter+o.popup;
+   o.total=o.key+o.secondary;
+   return o;
+ }).filter(x=>x.year&&x.week&&x.date_from)
+   .sort((a,b)=>a.date_from.localeCompare(b.date_from));
+}
+
+function populateOptions(selectLatest=true){
+ const sel=document.getElementById('week');
+ sel.innerHTML=DATA.map((r,i)=>
+   '<option value="'+i+'">Týden '+r.week+' / '+r.year+' · '+fd(r.date_from)+'–'+fd(r.date_to)+'</option>'
+ ).reverse().join('');
+ if(selectLatest) sel.value=String(DATA.length-1);
+}
+
+async function refreshLive(){
+ const sel=document.getElementById('week');
+ sel.disabled=true;
+ document.getElementById('status').textContent='Načítám živá data…';
+ try{
+   const res=await fetch(CSV_URL+'&_='+Date.now(),{cache:'no-store'});
+   if(!res.ok) throw new Error('HTTP '+res.status);
+   const fresh=normalizeCSV(await res.text());
+   if(!fresh.length) throw new Error('prázdná data');
+   DATA=fresh;
+   populateOptions(true);
+   sel.disabled=false;
+   document.getElementById('status').textContent='Živá data · '+DATA.length+' týdnů';
+   render();
+ }catch(e){
+   console.error('Načtení živých dat selhalo:',e);
+   DATA=[];
+   sel.innerHTML='<option>Data se nepodařilo načíst</option>';
+   document.getElementById('status').textContent='Chyba načtení živých dat';
+   document.getElementById('footer').textContent='Zdroj: Fostra Leads API · data se nepodařilo načíst';
+ }
+}
+
+document.getElementById('week').addEventListener('change',render);
+refreshLive();
+</script>
+</body>
+</html>
